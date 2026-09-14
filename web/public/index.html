@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KIZUMI MD — Konekte WhatsApp</title>
+<style>
+  :root{
+    --bg: #0a1310;
+    --surface: #101c17;
+    --surface-2: #16241d;
+    --line: #22352b;
+    --text: #eaf3ec;
+    --muted: #7f9c8d;
+    --green: #2ed573;
+    --green-dim: #1f9c54;
+    --blue: #5b8cff;
+    --red: #ff6b6b;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(46,213,115,0.08), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(91,140,255,0.06), transparent 40%);
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .badge-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding: 0 2px;
+  }
+
+  .brand {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: 0.2px;
+  }
+
+  .brand span { color: var(--green); }
+
+  .stats {
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 26px;
+  }
+
+  .hero {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-size: 19px;
+    font-weight: 650;
+    margin: 0 0 6px;
+    text-align: center;
+  }
+
+  .sub {
+    font-size: 13.5px;
+    color: var(--muted);
+    text-align: center;
+    margin: 0 0 22px;
+    line-height: 1.5;
+  }
+
+  .tabs {
+    display: flex;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 18px;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 9px 0;
+    font-size: 13.5px;
+    font-weight: 550;
+    color: var(--muted);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    user-select: none;
+  }
+
+  .tab.active {
+    background: var(--green);
+    color: #06170e;
+  }
+
+  label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 13px;
+    font-size: 15px;
+    color: var(--text);
+    font-family: var(--mono);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--green-dim);
+  }
+
+  input[type="text"]::placeholder {
+    color: #4d6157;
+    font-family: var(--sans);
+  }
+
+  button {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 0;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: opacity 0.15s ease, transform 0.05s ease;
+    font-family: var(--sans);
+  }
+
+  button:active { transform: scale(0.99); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--green);
+    color: #06170e;
+  }
+
+  .btn-primary:hover:not(:disabled) { opacity: 0.92; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+
+  .btn-danger {
+    background: transparent;
+    border: 1px solid #4a2a2a;
+    color: var(--red);
+  }
+
+  .error-msg {
+    font-size: 13px;
+    color: var(--red);
+    margin-top: 12px;
+    display: none;
+    line-height: 1.5;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .code-display {
+    text-align: center;
+    padding: 22px 0 8px;
+  }
+
+  .code-value {
+    font-family: var(--mono);
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: 6px;
+    color: var(--green);
+    word-break: break-all;
+  }
+
+  .code-hint {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 14px;
+    line-height: 1.6;
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 15px;
+  }
+
+  .code-hint b { color: var(--text); }
+
+  .qr-display {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0 4px;
+  }
+
+  .qr-display img {
+    width: 220px;
+    height: 220px;
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px;
+  }
+
+  .qr-loading {
+    width: 220px;
+    height: 220px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin: 12px auto 4px;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--blue);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+
+  .connected-box {
+    text-align: center;
+    padding: 10px 0 4px;
+  }
+
+  .check {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(46,213,115,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+  }
+
+  .connected-number {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--text);
+    margin: 4px 0 20px;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11.5px;
+    color: #4d6157;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="badge-row">
+    <div class="brand">KIZUMI <span>MD</span></div>
+    <div class="stats" id="statsLine">···</div>
+  </div>
+
+  <div class="card">
+
+    <div class="hero">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+        <rect x="14" y="3" width="16" height="28" rx="3.5" stroke="#2ed573" stroke-width="1.6"/>
+        <line x1="19" y1="26" x2="25" y2="26" stroke="#2ed573" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="34" cy="17" r="6.5" stroke="#5b8cff" stroke-width="1.6" fill="#0a1310"/>
+        <path d="M31.5 17L33.3 18.8L36.8 15.3" stroke="#5b8cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <h1>Konekte kont WhatsApp ou</h1>
+    <p class="sub">Chwazi yon fason pou jwenn aksè — ak yon kòd oswa ak yon QR.</p>
+
+    <div class="tabs">
+      <div class="tab active" data-method="code">Kòd</div>
+      <div class="tab" data-method="qr">QR</div>
+    </div>
+
+    <!-- Panel: idle form -->
+    <div class="panel active" id="panelForm">
+      <div id="numberField">
+        <label for="numberInput">Nimewo WhatsApp ou (ak kòd peyi)</label>
+        <input type="text" id="numberInput" placeholder="50938112233" inputmode="numeric">
+      </div>
+      <button class="btn-primary" id="submitBtn">Jwenn kòd la</button>
+      <p class="error-msg" id="errorMsg"></p>
+    </div>
+
+    <!-- Panel: code result -->
+    <div class="panel" id="panelCode">
+      <div class="code-display">
+        <div class="code-value" id="codeValue">— — — —</div>
+      </div>
+      <div class="code-hint">
+        Louvri <b>WhatsApp</b> → <b>Paramèt</b> → <b>Aparèy ki konekte</b> → <b>Konekte yon aparèy</b> → <b>Konekte ak nimewo telefòn ou pito</b>, epi antre kòd sa a.
+      </div>
+      <div class="status-row"><span class="dot"></span> N ap tann w konekte…</div>
+    </div>
+
+    <!-- Panel: qr result -->
+    <div class="panel" id="panelQr">
+      <div class="qr-display" id="qrHolder">
+        <div class="qr-loading">N ap prepare QR la…</div>
+      </div>
+      <div class="status-row"><span class="dot"></span> Eskane l ak WhatsApp → Aparèy ki konekte</div>
+    </div>
+
+    <!-- Panel: connected -->
+    <div class="panel" id="panelConnected">
+      <div class="connected-box">
+        <div class="check">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12.5L10 17.5L19 7" stroke="#2ed573" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>Nimewo konekte</div>
+        <div class="connected-number" id="connectedNumber">—</div>
+        <button class="btn-danger" id="delpairBtn">Dekonekte</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">KIZUMI MD — sesyon yo chifre, pa gen mesaj ki sove sou sèvè a.</div>
+</div>
+
+<script>
+(function() {
+  const tabs = document.querySelectorAll('.tab');
+  const panelForm = document.getElementById('panelForm');
+  const panelCode = document.getElementById('panelCode');
+  const panelQr = document.getElementById('panelQr');
+  const panelConnected = document.getElementById('panelConnected');
+  const numberField = document.getElementById('numberField');
+  const numberInput = document.getElementById('numberInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorMsg = document.getElementById('errorMsg');
+  const codeValue = document.getElementById('codeValue');
+  const qrHolder = document.getElementById('qrHolder');
+  const connectedNumber = document.getElementById('connectedNumber');
+  const delpairBtn = document.getElementById('delpairBtn');
+  const statsLine = document.getElementById('statsLine');
+
+  let method = 'code';
+  let pollTimer = null;
+
+  function showPanel(panel) {
+    [panelForm, panelCode, panelQr, panelConnected].forEach(p => p.classList.remove('active'));
+    panel.classList.add('active');
+  }
+
+  function showError(text) {
+    errorMsg.textContent = text;
+    errorMsg.style.display = 'block';
+  }
+
+  function clearError() {
+    errorMsg.style.display = 'none';
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      method = tab.dataset.method;
+      numberField.style.display = method === 'code' ? 'block' : 'none';
+      submitBtn.textContent = method === 'code' ? 'Jwenn kòd la' : 'Jenere QR la';
+      clearError();
+    });
+  });
+
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      statsLine.textContent = `${data.connected}/${data.capacity} sesyon aktif`;
+    } catch (e) {
+      statsLine.textContent = '';
+    }
+  }
+
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  function startPolling() {
+    stopPolling();
+    pollTimer = setInterval(checkStatus, 2500);
+  }
+
+  async function checkStatus() {
+    try {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+
+      if (data.status === 'connected') {
+        stopPolling();
+        connectedNumber.textContent = data.number || '';
+        showPanel(panelConnected);
+        loadStats();
+        return;
+      }
+
+      if (data.status === 'idle' || data.status === 'disconnected') {
+        // sesyon fini/tonbe san koneksyon — kite moun rekòmanse
+        stopPolling();
+        return;
+      }
+
+      if (method === 'qr' && data.qrDataUrl) {
+        qrHolder.innerHTML = `<img src="${data.qrDataUrl}" alt="QR code">`;
+      }
+    } catch (e) {
+      // silans, n ap eseye ankò nan pwochen tik la
+    }
+  }
+
+  async function submitPair() {
+    clearError();
+    const number = numberInput.value.trim();
+
+    if (method === 'code' && number.replace(/[^0-9]/g, '').length < 8) {
+      showError('Antre yon nimewo valid, ak kòd peyi a (egz: 50938112233).');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Tann...';
+
+    try {
+      const res = await fetch('/api/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number, method })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Gen yon pwoblèm, eseye ankò.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = method === 'code' ? 'Jwenn kòd la' : 'Jenere QR la';
+        return;
+      }
+
+      if (data.alreadyConnected) {
+        connectedNumber.textContent = data.number || '';
+        showPanel(panelConnected);
+        loadStats();
+        return;
+      }
+
+      if (method === 'code' && data.code) {
+        codeValue.textContent = data.code;
+        showPanel(panelCode);
+        startPolling();
+      } else if (method === 'qr') {
+        qrHolder.innerHTML = '<div class="qr-loading">N ap prepare QR la…</div>';
+        showPanel(panelQr);
+        startPolling();
+        checkStatus();
+      }
+    } catch (e) {
+      showError('Pa gen koneksyon ak sèvè a, eseye ankò.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = method === 'code' ? 'Jwenn kòd la' : 'Jenere QR la';
+    }
+  }
+
+  async function delpair() {
+    delpairBtn.disabled = true;
+    try {
+      await fetch('/api/delpair', { method: 'POST' });
+    } catch (e) {}
+    delpairBtn.disabled = false;
+    codeValue.textContent = '— — — —';
+    numberInput.value = '';
+    showPanel(panelForm);
+    loadStats();
+  }
+
+  submitBtn.addEventListener('click', submitPair);
+  delpairBtn.addEventListener('click', delpair);
+
+  numberInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitPair();
+  });
+
+  // Restore state on load (an ka moun rafrechi paj la pandan l ap pair)
+  async function init() {
+    loadStats();
+    try {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      if (data.status === 'connected') {
+        connectedNumber.textContent = data.number || '';
+        showPanel(panelConnected);
+      } else if (data.status === 'connecting') {
+        if (data.method === 'qr') {
+          showPanel(panelQr);
+          if (data.qrDataUrl) qrHolder.innerHTML = `<img src="${data.qrDataUrl}" alt="QR code">`;
+        } else if (data.method === 'code') {
+          showPanel(panelCode);
+        }
+        startPolling();
+      }
+    } catch (e) {}
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>
