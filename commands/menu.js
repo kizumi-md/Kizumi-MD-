@@ -95,22 +95,21 @@ function buildMenuText(pushName) {
     return "```" + body + "```";
 }
 
-// Cache en mémoire : la vidéo n'est téléchargée qu'UNE FOIS (au premier
-// .menu), puis réutilisée pour tous les appels suivants. Beaucoup plus
-// rapide et évite de re-télécharger 187 Ko à chaque commande.
-let cachedVideoBuffer = null;
+// Cache en mémoire : l'image n'est téléchargée qu'UNE FOIS (au premier
+// .menu), puis réutilisée pour tous les appels suivants.
+let cachedImageBuffer = null;
 
-async function getMenuVideoBuffer() {
-    if (cachedVideoBuffer) return cachedVideoBuffer;
+async function getMenuImageBuffer() {
+    if (cachedImageBuffer) return cachedImageBuffer;
 
     const axios = require('axios');
-    const res = await axios.get(MENU_VIDEO_URL, {
+    const res = await axios.get(MENU_IMAGE_URL, {
         responseType: 'arraybuffer',
         timeout: 30000,
         headers: { 'User-Agent': 'Mozilla/5.0' }
     });
-    cachedVideoBuffer = Buffer.from(res.data);
-    return cachedVideoBuffer;
+    cachedImageBuffer = Buffer.from(res.data);
+    return cachedImageBuffer;
 }
 
 module.exports = {
@@ -121,18 +120,14 @@ module.exports = {
         const menuText = buildMenuText(pushName);
 
         try {
-            const videoBuffer = await getMenuVideoBuffer();
+            const imageBuffer = await getMenuImageBuffer();
 
-            // Vidéo jouée en boucle comme un GIF (gifPlayback:true)
             await sock.sendCustom(from, {
-                video: videoBuffer,
-                gifPlayback: true,
+                image: imageBuffer,
                 caption: menuText
             });
         } catch (e) {
-            console.log("MENU VIDEO ERROR:", e.message);
-            // Si la vidéo est indisponible (réseau coupé, lien mort...),
-            // on retombe sur le texte seul plutôt que de planter la commande.
+            console.log("MENU IMAGE ERROR:", e.message);
             await sock.sendCustom(from, { text: menuText });
         }
     },
