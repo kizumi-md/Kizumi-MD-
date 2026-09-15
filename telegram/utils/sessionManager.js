@@ -79,13 +79,23 @@ class SessionManager {
         const { state, saveCreds } = await useMultiFileAuthState(sessDir);
         const { version } = await fetchLatestBaileysVersion();
 
-        const sock = makeWASocket({
-            version,
-            logger: waLogger,
-            printQRInTerminal: false,
-            auth: state,
-            browser: ["Ubuntu", "Chrome", "20.0.04"]
-        });
+        const BROWSER_NAMES = ["Chrome", "Firefox", "Edge", "Safari", "Opera"];
+const OS_NAMES = ["Ubuntu", "Windows", "macOS", "Debian", "Fedora"];
+const hashSource = String(chatId);
+let hash = 0;
+for (let i = 0; i < hashSource.length; i++) hash = (hash * 31 + hashSource.charCodeAt(i)) >>> 0;
+const osName = OS_NAMES[hash % OS_NAMES.length];
+const browserName = BROWSER_NAMES[Math.floor(hash / OS_NAMES.length) % BROWSER_NAMES.length];
+const versionSuffix = `${(hash % 90) + 10}.0.${hash % 1000}`;
+
+const sock = makeWASocket({
+    version,
+    logger: waLogger,
+    printQRInTerminal: false,
+    auth: state,
+    browser: [osName, browserName, versionSuffix]
+});
+
 
         const entry = {
             sock,
