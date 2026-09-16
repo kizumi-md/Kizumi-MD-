@@ -207,14 +207,21 @@ const menuPath = path.join(ROOT, "commands/menu.js");
                     // si l'exécution prend quelques secondes.
                     sock.sendMessage(from, { react: { text: "⚔️", key: m.key } }).catch(() => {});
 
-                    const cmd = require(targetPath);
-                    await cmd.execute(sock, m, args);
-                }
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    });
+                    // --- LOG DIAGNOSTIC TEMPORAIRE ---
+    const dbgTag = `[${sock.sessionId || "?"}][${command}]`;
+    console.log(`${dbgTag} 1/3 require du module...`);
+    const cmd = require(targetPath);
+    console.log(`${dbgTag} 2/3 module chargé, appel execute()...`);
+
+    const watchdog = setTimeout(() => {
+        console.log(`${dbgTag} ⏱️ TOUJOURS BLOQUÉ après 15s dans execute()`);
+    }, 15000);
+
+    await cmd.execute(sock, m, args);
+    clearTimeout(watchdog);
+    console.log(`${dbgTag} 3/3 execute() terminé avec succès`);
+    // --- FIN LOG DIAGNOSTIC ---
+}
 }
 
 function applyFont(text, fontIndex) {
