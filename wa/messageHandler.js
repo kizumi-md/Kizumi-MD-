@@ -195,9 +195,8 @@ function registerWAHandlers(sock, meta = {}) {
                     return sock.sendCustom(from, { text: "\u26a0\ufe0f Cette commande est reservee a mon proprietaire." });
                 }
 
-               const cmdPath = path.join(ROOT, "commands", `${command}.js`);
-const menuPath = path.join(ROOT, "commands/menu.js");
-
+                const cmdPath = path.join(ROOT, "commands", `${command}.js`);
+                const menuPath = path.join(ROOT, "commands/menu.js");
                 const targetPath = fs.existsSync(cmdPath) ? cmdPath : (command === "menu" || command === "help") ? menuPath : null;
 
                 if (targetPath) {
@@ -208,20 +207,25 @@ const menuPath = path.join(ROOT, "commands/menu.js");
                     sock.sendMessage(from, { react: { text: "⚔️", key: m.key } }).catch(() => {});
 
                     // --- LOG DIAGNOSTIC TEMPORAIRE ---
-    const dbgTag = `[${sock.sessionId || "?"}][${command}]`;
-    console.log(`${dbgTag} 1/3 require du module...`);
-    const cmd = require(targetPath);
-    console.log(`${dbgTag} 2/3 module chargé, appel execute()...`);
+                    const dbgTag = `[${sock.sessionId || "?"}][${command}]`;
+                    console.log(`${dbgTag} 1/3 require du module...`);
+                    const cmd = require(targetPath);
+                    console.log(`${dbgTag} 2/3 module chargé, appel execute()...`);
 
-    const watchdog = setTimeout(() => {
-        console.log(`${dbgTag} ⏱️ TOUJOURS BLOQUÉ après 15s dans execute()`);
-    }, 15000);
+                    const watchdog = setTimeout(() => {
+                        console.log(`${dbgTag} ⏱️ TOUJOURS BLOQUÉ après 15s dans execute()`);
+                    }, 15000);
 
-    await cmd.execute(sock, m, args);
-    clearTimeout(watchdog);
-    console.log(`${dbgTag} 3/3 execute() terminé avec succès`);
-    // --- FIN LOG DIAGNOSTIC ---
-}
+                    await cmd.execute(sock, m, args);
+                    clearTimeout(watchdog);
+                    console.log(`${dbgTag} 3/3 execute() terminé avec succès`);
+                    // --- FIN LOG DIAGNOSTIC ---
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    });
 }
 
 function applyFont(text, fontIndex) {
