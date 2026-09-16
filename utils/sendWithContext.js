@@ -74,7 +74,10 @@ async function sendWithContext(client, remoteJid, content, options = {}) {
         contextInfo: { ...contextInfo, ...(content.contextInfo || {}) },
     };
 
-    return await client.sendMessage(remoteJid, message, options);
-}
+    const dbgTag = `[${client.sessionId || "?"}][sendWithContext]`;
+console.log(`${dbgTag} appel client.sendMessage vers ${remoteJid}...`);
+const result = await client.sendMessage(remoteJid, message, options);
+console.log(`${dbgTag} client.sendMessage a répondu avec succès`);
+return result;
 
 module.exports = { sendWithContext, getContextInfo };
